@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Resultados</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 30px;
+      background: #f8f8f8;
+    }
+    .candidato {
+      background: white;
+      margin-bottom: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    .votante {
+      margin-left: 20px;
+    }
+    button {
+      margin-left: 10px;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #c0392b;
+    }
+  </style>
+</head>
+<body>
+  <h2>Resultados en tiempo real</h2>
+  <div id="resultados"></div>
+
+  <script>
+    async function cargarResultados() {
+      const res = await fetch("/votos-detalle");
+      const votos = await res.json();
+      const conteo = {};
+
+      for (const [usuario, candidato] of Object.entries(votos)) {
+        if (!conteo[candidato]) conteo[candidato] = [];
+        conteo[candidato].push(usuario);
+      }
+
+      const contenedor = document.getElementById("resultados");
+      contenedor.innerHTML = "";
+
+      for (const [candidato, usuarios] of Object.entries(conteo)) {
+        const div = document.createElement("div");
+        div.className = "candidato";
+        div.innerHTML = `<strong>${candidato}</strong> (${usuarios.length} voto(s))<br><ul>` +
+          usuarios.map(u => `<li class="votante">${u} <button onclick="eliminar('${u}')">Eliminar</button></li>`).join("") +
+          `</ul>`;
+        contenedor.appendChild(div);
+      }
+    }
+
+    async function eliminar(nombre) {
+      if (!confirm(`¿Eliminar voto de ${nombre}?`)) return;
+      const res = await fetch(`/eliminar-voto?user=${nombre}`, { method: "DELETE" });
+      const data = await res.json();
+      alert(data.message);
+      cargarResultados();
+    }
+
+    cargarResultados();
+    setInterval(cargarResultados, 3000);
+  </script>
+</body>
+</html>

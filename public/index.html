@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Elecciones Paradise Vol. 4</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: url("fondo.png") no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+    }
+
+    .overlay {
+      background-color: rgba(0, 0, 0, 0.7);
+      min-height: 100vh;
+      padding: 30px;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      font-size: 2rem;
+      color: #ffffff;
+      text-shadow: 0 0 10px #ff00e1;
+    }
+
+    #username {
+      margin-bottom: 30px;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      width: 250px;
+      font-size: 16px;
+      box-shadow: 0 0 10px #ff00e1;
+      text-align: center;
+    }
+
+    #votacion {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 20px;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .candidato {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #8a2be2;
+      transition: transform 0.2s;
+    }
+
+    .candidato:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px #ff00e1;
+    }
+
+    .candidato img {
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .candidato strong {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 18px;
+      text-shadow: 0 0 5px #fff;
+    }
+
+    .candidato button {
+      background-color: #ff00e1;
+      border: none;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 0 10px #ff00e1;
+      transition: background 0.3s;
+    }
+
+    .candidato button:hover {
+      background-color: #cc00b3;
+    }
+
+    #mensaje {
+      margin-top: 30px;
+      font-weight: bold;
+      font-size: 18px;
+      color: #ffb3fc;
+      text-shadow: 0 0 5px #ff00e1;
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay">
+    <img src="paradise_logo.png" alt="Paradise Vol. 4" style="max-width: 300px; margin-bottom: 20px; filter: drop-shadow(0 0 8px #ff00e1);" />
+    <h2>Elecciones del servidor</h2>
+    <input type="text" id="username" placeholder="Tu nombre de Minecraft" />
+
+    <div id="votacion"></div>
+
+    <p id="mensaje"></p>
+  </div>
+
+  <script>
+    const candidatos = [
+      { nombre: "Cylan", skin: "Cylantrox" },
+      { nombre: "ElStormy", skin: "ElStormy" },
+      { nombre: "N0CT", skin: "N0CT1555" },
+      { nombre: "AlexV_VT", skin: "AlexV_VT" },
+      { nombre: "TheBlackDragonXD", skin: "TheBlackDragonXD" },
+      { nombre: "ElNaiti", skin: "elnaiti_" }
+    ];
+
+    const contenedor = document.getElementById("votacion");
+
+    candidatos.forEach(({ nombre, skin }) => {
+      const div = document.createElement("div");
+      div.className = "candidato";
+      div.innerHTML = `
+        <img src="https://mc-heads.net/avatar/${skin}/100" alt="${nombre}"><br>
+        <strong>${nombre}</strong>
+        <button onclick="votar('${nombre}')">Votar por ${nombre}</button>
+      `;
+      contenedor.appendChild(div);
+    });
+
+    async function votar(candidato) {
+      const username = document.getElementById("username").value.trim();
+      if (!username) {
+        document.getElementById("mensaje").innerText = "Escribe tu nombre de Minecraft antes de votar.";
+        return;
+      }
+
+      const res = await fetch("/guardar-voto", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, candidato })
+      });
+
+      const data = await res.json();
+      document.getElementById("mensaje").innerText = data.message;
+
+      if (data.success) {
+        document.querySelectorAll("button").forEach(b => b.disabled = true);
+      }
+    }
+  </script>
+</body>
+</html>
